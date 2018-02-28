@@ -1,0 +1,29 @@
+---
+- hosts: all
+  remote_user: ubuntu
+  become: yes
+
+  vars:
+    document_root: /var/www/html
+    wp2_repo: /mnt/c/Users/Carlton/Documents/Stony Brook/CSE 356 Cloud Computing/warmup2
+
+  tasks:
+    - name: Copy warmup2 files to document root
+      copy:
+        src: "{{ wp2_repo }}/{{ item }}"
+        dest: "{{ document_root }}"
+      with_items:
+        - adduser.php
+        - currentgame.php
+        - getgame.php
+        - getscore.php
+        - greeting.php
+        - listgames.php
+        - login.php
+        - logout.php
+        - status.php
+        - verify.php
+        - .htaccess
+        - styles/
+        - scripts/
+        - ttt/

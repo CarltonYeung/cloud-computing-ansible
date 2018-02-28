@@ -1,0 +1,17 @@
+---
+- hosts: all
+  remote_user: ubuntu
+  become: yes
+
+  vars:
+    document_root: /var/www/html
+    wp1_repo: /mnt/c/Users/Carlton/Documents/Stony Brook/CSE 356 Cloud Computing/warmup1
+
+  tasks:
+    - name: Copy warmup1 files to document root
+      copy:
+        src: "{{ wp1_repo }}/{{ item }}"
+        dest: "{{ document_root }}"
+      with_items:
+        - ttt
+        - .htaccess

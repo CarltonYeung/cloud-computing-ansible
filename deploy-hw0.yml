@@ -1,0 +1,30 @@
+---
+- hosts: all
+  remote_user: ubuntu
+  become: yes
+
+  vars:
+    document_root: /var/www/html
+    hw0_repo: https://github.com/CarltonYeung/cse356-hw0
+    hw0_temp: "{{ document_root }}/hw0"
+    hw1_playbook: /mnt/c/Users/Carlton/Documents/Stony Brook/CSE 356 Cloud Computing/hw1/ansible/hw1.yml
+
+  tasks:
+    - name: Clone hw0 repo to temporary folder
+      git:
+        repo: "{{ hw0_repo }}"
+        dest: "{{ hw0_temp }}"
+        update: no
+
+    - name: Move hw0 to document root
+      shell: mv {{ hw0_temp }}/* {{ document_root }}
+
+    - name: Remove temporary folder
+      file:
+        state: absent
+        path: "{{ hw0_temp }}"
+
+    - name: Copy hw1 playbook to document root
+      copy:
+        src: "{{ hw1_playbook }}"
+        dest: "{{ document_root }}"

@@ -1,0 +1,48 @@
+---
+- hosts: all
+  remote_user: ubuntu
+  become: yes
+
+  vars:
+    document_root: /var/www/html
+    hw0_repo: https://github.com/CarltonYeung/cse356-hw0
+    hw0_temp: "{{ document_root }}/hw0"
+    hw1_playbook: /mnt/c/Users/Carlton/Documents/Stony Brook/CSE 356 Cloud Computing/hw1/ansible/hw1.yml
+    wp2_repo: /mnt/c/Users/Carlton/Documents/Stony Brook/CSE 356 Cloud Computing/warmup2
+
+  tasks:
+    - name: Set Postfix hostname
+      debconf:
+        name: postfix
+        question: postfix/mailname
+        value: "{{ ansible_fqdn }}"
+        vtype: string
+
+    - name: Set Postfix option type to Internet Site
+      debconf:
+        name: postfix
+        question: postfix/main_mailer_type
+        value: 'Internet Site'
+        vtype: string
+
+    - name: Install Postfix and mailutils
+      apt:
+        name: "{{ item }}"
+        state: latest
+        update_cache: yes
+      with_items:
+        - postfix
+        - mailutils
+      notify:
+        - restart apache2
+
+  handlers:
+    - name: start mongodb
+      service:
+        name: mongod
+        state: started
+
+    - name: restart apache2
+      service:
+        name: apache2
+        state: restarted
