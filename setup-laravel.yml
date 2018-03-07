@@ -1,0 +1,132 @@
+---
+- hosts: all
+  remote_user: ubuntu
+
+  vars:
+    document_root: /var/www/html
+    project_name: a_laravel_project
+    project_dir: '{{ document_root }}/{{ project_name }}'
+    apache_conf: /etc/apache2/apache2.conf
+
+  tasks:
+    - name: Update and upgrade apt packages
+      become: true
+      apt:
+        update_cache: yes
+        upgrade: yes
+        autoremove: yes
+
+    - name: Install apache2
+      become: true
+      apt:
+        name: apache2
+        state: latest
+        update_cache: yes
+
+    - name: Enable apache2 mod_rewrite
+      become: true
+      apache2_module:
+        name: rewrite
+      notify:
+        - restart apache2
+
+    - name: Set 'AllowOverride All' in apache2.conf
+      become: true
+      replace:
+        path: '{{ apache_conf }}'
+        regexp: '(<Directory\s+/var/www/>\s+.*\s+AllowOverride\s+)None'
+        replace: '\1All'
+
+    - name: Add php7.2 repository
+      become: true
+      apt_repository:
+        repo: 'ppa:ondrej/php'
+
+    - name: Install php7.2 and some required packages
+      become: true
+      apt:
+        name: '{{ item }}'
+        state: latest
+        update_cache: yes
+      with_items:
+        - php7.2
+        - php7.2-common
+        - php7.2-mbstring
+        - php7.2-xml
+        - zip
+        - unzip
+        - php7.2-zip
+
+    - name: Install Composer
+      become: true
+      apt:
+        name: composer
+        state: latest
+        update_cache: yes
+
+    - name: Stat project_dir
+      stat:
+        path: '{{ project_dir }}'
+      register: project_dir_stat
+
+    - name: Create Laravel project
+      become: true
+      composer:
+        command: create-project
+        arguments: laravel/laravel {{ project_dir }}
+        prefer_dist: true
+        working_dir: '{{ document_root }}'
+      when: not project_dir_stat.stat.exists
+
+    - name: Stat '.env.example'
+      stat:
+        path: '{{ project_dir }}/.env.example'
+      register: envexample
+
+    - name: Stat '.env'
+      stat:
+        path: '{{ project_dir }}/.env'
+      register: env
+
+    - name: Rename '.env.example' to '.env'
+      become: true
+      command: mv '{{ project_dir }}/.env.example' '{{ project_dir }}/.env'
+      when:
+        - envexample.stat.exists
+        - not env.stat.exists
+      notify:
+        - generate application key
+
+    - name: Directories within the storage and the bootstrap/cache directories should be writable by your web server or Laravel will not run
+      become: true
+      file:
+        path: '{{ project_dir }}/{{ item }}'
+        owner: www-data
+        group: www-data
+        state: directory
+        recurse: yes
+      with_items:
+        - storage
+        - bootstrap/cache
+
+    - name: Set document root to Laravel's /public directory
+      become: true
+      replace:
+        path: /etc/apache2/sites-enabled/000-default.conf
+        regexp: '(DocumentRoot\s+)/var/www/html(\s+)'
+        replace: '\1{{ project_dir }}/public\2'
+      notify:
+        - restart apache2
+
+  handlers:
+    - name: restart apache2
+      become: true
+      service:
+        name: apache2
+        state: restarted
+
+    - name: generate application key
+      become: true
+      command: php artisan key:generate
+      args:
+        chdir: '{{ project_dir }}'
