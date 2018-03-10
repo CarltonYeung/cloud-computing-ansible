@@ -3,13 +3,6 @@
   remote_user: ubuntu
   become: yes
 
-  vars:
-    document_root: /var/www/html
-    hw0_repo: https://github.com/CarltonYeung/cse356-hw0
-    hw0_temp: "{{ document_root }}/hw0"
-    hw1_playbook: /mnt/c/Users/Carlton/Documents/Stony Brook/CSE 356 Cloud Computing/hw1/ansible/hw1.yml
-    wp2_repo: /mnt/c/Users/Carlton/Documents/Stony Brook/CSE 356 Cloud Computing/warmup2
-
   tasks:
     - name: Set Postfix hostname
       debconf:
@@ -37,11 +30,6 @@
         - restart apache2
 
   handlers:
-    - name: start mongodb
-      service:
-        name: mongod
-        state: started
-
     - name: restart apache2
       service:
         name: apache2

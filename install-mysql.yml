@@ -1,0 +1,19 @@
+---
+- hosts: all
+  remote_user: ubuntu
+  become: true
+    
+  tasks:
+    - name: Install mysql-server
+      apt:
+        name: mysql-server
+        state: latest
+        update_cache: yes
+      notify:
+        - start mysql-server
+
+  handlers:
+    - name: start mysql-server
+      service:
+        name: mysql-server
+        state: started

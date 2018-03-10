@@ -1,0 +1,23 @@
+---
+- hosts: all
+  remote_user: ubuntu
+
+  tasks:
+    - name: Add php7.2 repository
+      become: true
+      apt_repository:
+        repo: 'ppa:ondrej/php'
+
+    - name: Install php7.2 and some required packages
+      become: true
+      apt:
+        name: '{{ item }}'
+        state: latest
+        update_cache: yes
+      with_items:
+        - php7.2
+        - php7.2-common
+        - php7.2-mbstring
+        - php7.2-xml
+        - php7.2-zip
+        - php7.2-mysql

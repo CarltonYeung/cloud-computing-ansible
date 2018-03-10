@@ -4,7 +4,7 @@
 
   vars:
     document_root: /var/www/html
-    project_name: a_laravel_project
+    project_name: twitir
     project_dir: '{{ document_root }}/{{ project_name }}'
     apache_conf: /etc/apache2/apache2.conf
 
@@ -56,6 +56,7 @@
         - zip
         - unzip
         - php7.2-zip
+        - php7.2-mysql
 
     - name: Install Composer
       become: true
@@ -73,7 +74,7 @@
       become: true
       composer:
         command: create-project
-        arguments: laravel/laravel {{ project_dir }}
+        arguments: laravel/laravel {{ project_dir }} --no-dev
         prefer_dist: true
         working_dir: '{{ document_root }}'
       when: not project_dir_stat.stat.exists
@@ -97,6 +98,29 @@
       notify:
         - generate application key
 
+    - name: Configure .env (only for keys that already exist)
+      become: true
+      replace:
+        path: '{{ project_dir }}/.env'
+        regexp: '{{ item.key }}=[^\n]*\n'
+        replace: '{{ item.key }}={{ item.value }}\n'
+      with_items:
+        - { key: 'APP_NAME'         , value: 'twitir'                                          }
+        - { key: 'DB_CONNECTION'    , value: 'mysql'                                           }
+        - { key: 'DB_HOST'          , value: 'twitir.cioremsnl6gk.us-east-2.rds.amazonaws.com' }
+        - { key: 'DB_PORT'          , value: '3306'                                            }
+        - { key: 'DB_DATABASE'      , value: 'twitir'                                          }
+        - { key: 'DB_USERNAME'      , value: 'ubuntu'                                          }
+        - { key: 'DB_PASSWORD'      , value: 'Chill19135123'                                   }
+        - { key: 'MAIL_DRIVER'      , value: 'smtp'                                            }
+        - { key: 'MAIL_HOST'        , value: 'localhost'                                       }
+        - { key: 'MAIL_PORT'        , value: '25'                                              }
+        - { key: 'MAIL_USERNAME'    , value: 'null'                                            }
+        - { key: 'MAIL_PASSWORD'    , value: 'null'                                            }
+        - { key: 'MAIL_ENCRYPTION'  , value: 'null'                                            }
+        - { key: 'MAIL_FROM_ADDRESS', value: 'noreply@twitir.io'                               }
+        - { key: 'MAIL_FROM_NAME'   , value: 'twitir'                                          }
+
     - name: Directories within the storage and the bootstrap/cache directories should be writable by your web server or Laravel will not run
       become: true
       file:
@@ -113,10 +137,12 @@
       become: true
       replace:
         path: /etc/apache2/sites-enabled/000-default.conf
-        regexp: '(DocumentRoot\s+)/var/www/html(\s+)'
-        replace: '\1{{ project_dir }}/public\2'
+        regexp: '(DocumentRoot\s+)(.*)(\n)'
+        replace: '\1{{ project_dir }}/public\3'
       notify:
         - restart apache2
+
+
 
   handlers:
     - name: restart apache2
