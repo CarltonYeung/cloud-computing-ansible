@@ -1,7 +1,7 @@
 ---
-- hosts: all
+- hosts: mongo
   remote_user: ubuntu
-  become: yes
+  become: true
 
   tasks:
     - name: Import the public key used by the package management system
@@ -22,6 +22,12 @@
         state: latest
       notify:
         - start mongodb
+
+    - name: Listen for incoming network connections
+      replace:
+        path: /etc/mongod.conf
+        regexp: 'bindIp: [^\n]*(\n)'
+        replace: 'bindIp: 0.0.0.0\n'
 
   handlers:
     - name: start mongodb
