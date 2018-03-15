@@ -34,3 +34,10 @@ Set AllowOverride All for /var/www
    This step will install dependencies (mongodb/mongodb)
    Inside /ttt, run:
    sudo composer require mongodb/mongodb --ignore-platform-reqs
+
+
+
+
+install-mysql.yml
+use python2
+ansible-playbook sample-playbook.yml -e 'ansible_python_interpreter=/usr/bin/python'

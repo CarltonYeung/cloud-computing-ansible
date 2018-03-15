@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: web
   remote_user: ubuntu
 
   vars:
@@ -57,6 +57,8 @@
         - unzip
         - php7.2-zip
         - php7.2-mysql
+        - php-pear
+        - php7.2-dev
 
     - name: Install Composer
       become: true
@@ -83,16 +85,19 @@
       stat:
         path: '{{ project_dir }}/.env.example'
       register: envexample
+      when: not project_dir_stat.stat.exists
 
     - name: Stat '.env'
       stat:
         path: '{{ project_dir }}/.env'
       register: env
+      when: not project_dir_stat.stat.exists
 
     - name: Rename '.env.example' to '.env'
       become: true
       command: mv '{{ project_dir }}/.env.example' '{{ project_dir }}/.env'
       when:
+        - not project_dir_stat.stat.exists
         - envexample.stat.exists
         - not env.stat.exists
       notify:
@@ -106,6 +111,7 @@
         replace: '{{ item.key }}={{ item.value }}\n'
       with_items:
         - { key: 'APP_NAME'         , value: 'twitir'                                          }
+        - { key: 'APP_DEBUG'        , value: 'false'                                           }
         - { key: 'DB_CONNECTION'    , value: 'mysql'                                           }
         - { key: 'DB_HOST'          , value: 'twitir.cioremsnl6gk.us-east-2.rds.amazonaws.com' }
         - { key: 'DB_PORT'          , value: '3306'                                            }
@@ -120,6 +126,9 @@
         - { key: 'MAIL_ENCRYPTION'  , value: 'null'                                            }
         - { key: 'MAIL_FROM_ADDRESS', value: 'noreply@twitir.io'                               }
         - { key: 'MAIL_FROM_NAME'   , value: 'twitir'                                          }
+      when:
+        - not project_dir_stat.stat.exists
+        - env.stat.exists
 
     - name: Directories within the storage and the bootstrap/cache directories should be writable by your web server or Laravel will not run
       become: true
@@ -132,6 +141,8 @@
       with_items:
         - storage
         - bootstrap/cache
+      when:
+        - not project_dir_stat.stat.exists
 
     - name: Set document root to Laravel's /public directory
       become: true
@@ -142,7 +153,38 @@
       notify:
         - restart apache2
 
+    - name: Import the public key used by the package management system
+      apt_key:
+        keyserver: hkp://keyserver.ubuntu.com:80
+        id: 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
+        state: present
 
+    - name: Create a list file for MongoDB
+      apt_repository:
+        repo: deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse
+        state: present
+
+    - name: Install the MongoDB packages
+      apt:
+        name: mongodb-org
+        update_cache: yes
+        state: latest
+      notify:
+        - start mongodb
+
+    - name: Listen for incoming network connections
+      replace:
+        path: /etc/mongod.conf
+        regexp: 'bindIp: [^\n]*(\n)'
+        replace: 'bindIp: 0.0.0.0\n'
+
+    - name: Install MongoDB PHP Driver
+      lineinfile:
+        path: '{{ item }}'
+        line: 'extension=mongodb.so'
+      with_items:
+        - /etc/php/7.2/apache2/php.ini
+        - /etc/php/7.2/cli/php.ini
 
   handlers:
     - name: restart apache2

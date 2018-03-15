@@ -1,7 +1,14 @@
 ---
-- hosts: all
+- hosts: mysql
   remote_user: ubuntu
   become: true
+
+  vars:
+    username: carlton
+    password: cse356cloudcomputingtwitir
+    db_name: twitir
+    dump_name: twitir.sql
+    dump_file: '../courseproject/{{ dump_name }}'
     
   tasks:
     - name: Install mysql-server
@@ -9,11 +16,60 @@
         name: mysql-server
         state: latest
         update_cache: yes
-      notify:
-        - start mysql-server
 
-  handlers:
-    - name: start mysql-server
+    - name: Install pip
+      apt:
+        name: python-pip
+        state: latest
+
+    - name: Install mysql python module
+      command: pip install MySQL-python
+
+    - name: Set root password
+      mysql_user:
+        name: '{{ username }}'
+        password: '{{ password }}'
+        priv: '*.*:ALL'
+        state: present
+
+    - name: Accept remote connections and add credentials to my.cnf
+      blockinfile:
+        path: /etc/mysql/my.cnf
+        block: |
+          [mysqld]
+          bind-address = 0.0.0.0
+
+          [mysql]
+          user = {{ username }}
+          password = {{ password }}
+
+    - name: Remove all anonymous user accounts
+      mysql_user:
+        name: ''
+        host_all: yes
+        state: absent
+
+    - name: Create a new database with name {{ db_name }}
+      mysql_db:
+        name: '{{ db_name }}'
+        state: present
+        login_user: '{{ username }}'
+        login_password: '{{ password }}'
+
+    - name: Copy database dump file
+      copy:
+        src: '{{ dump_file }}'
+        dest: /tmp
+
+    - name: Restore database
+      mysql_db:
+        name: '{{ db_name }}'
+        state: import
+        target: /tmp/{{ dump_name }}
+        login_user: '{{ username }}'
+        login_password: '{{ password }}'
+
+    - name: Restart mysql
       service:
-        name: mysql-server
-        state: started
+        name: mysql
+        state: restarted
