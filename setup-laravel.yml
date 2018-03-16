@@ -85,19 +85,16 @@
       stat:
         path: '{{ project_dir }}/.env.example'
       register: envexample
-      when: not project_dir_stat.stat.exists
 
     - name: Stat '.env'
       stat:
         path: '{{ project_dir }}/.env'
       register: env
-      when: not project_dir_stat.stat.exists
 
     - name: Rename '.env.example' to '.env'
       become: true
       command: mv '{{ project_dir }}/.env.example' '{{ project_dir }}/.env'
       when:
-        - not project_dir_stat.stat.exists
         - envexample.stat.exists
         - not env.stat.exists
       notify:
@@ -113,11 +110,11 @@
         - { key: 'APP_NAME'         , value: 'twitir'                                          }
         - { key: 'APP_DEBUG'        , value: 'false'                                           }
         - { key: 'DB_CONNECTION'    , value: 'mysql'                                           }
-        - { key: 'DB_HOST'          , value: 'twitir.cioremsnl6gk.us-east-2.rds.amazonaws.com' }
+        - { key: 'DB_HOST'          , value: '52.14.69.6'                                      }
         - { key: 'DB_PORT'          , value: '3306'                                            }
         - { key: 'DB_DATABASE'      , value: 'twitir'                                          }
-        - { key: 'DB_USERNAME'      , value: 'ubuntu'                                          }
-        - { key: 'DB_PASSWORD'      , value: 'Chill19135123'                                   }
+        - { key: 'DB_USERNAME'      , value: 'carlton'                                         }
+        - { key: 'DB_PASSWORD'      , value: 'cse356cloudcomputingtwitir'                      }
         - { key: 'MAIL_DRIVER'      , value: 'smtp'                                            }
         - { key: 'MAIL_HOST'        , value: 'localhost'                                       }
         - { key: 'MAIL_PORT'        , value: '25'                                              }
@@ -126,9 +123,6 @@
         - { key: 'MAIL_ENCRYPTION'  , value: 'null'                                            }
         - { key: 'MAIL_FROM_ADDRESS', value: 'noreply@twitir.io'                               }
         - { key: 'MAIL_FROM_NAME'   , value: 'twitir'                                          }
-      when:
-        - not project_dir_stat.stat.exists
-        - env.stat.exists
 
     - name: Directories within the storage and the bootstrap/cache directories should be writable by your web server or Laravel will not run
       become: true
@@ -154,37 +148,54 @@
         - restart apache2
 
     - name: Import the public key used by the package management system
+      become: true
       apt_key:
         keyserver: hkp://keyserver.ubuntu.com:80
         id: 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
         state: present
 
     - name: Create a list file for MongoDB
+      become: true
       apt_repository:
         repo: deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse
         state: present
 
     - name: Install the MongoDB packages
+      become: true
       apt:
         name: mongodb-org
         update_cache: yes
         state: latest
-      notify:
-        - start mongodb
-
-    - name: Listen for incoming network connections
-      replace:
-        path: /etc/mongod.conf
-        regexp: 'bindIp: [^\n]*(\n)'
-        replace: 'bindIp: 0.0.0.0\n'
 
     - name: Install MongoDB PHP Driver
+      become: true
+      pear:
+        name: pecl/mongodb
+        state: present
+
+    - name: Add mongodb.so extension to php.ini
+      become: true
       lineinfile:
         path: '{{ item }}'
         line: 'extension=mongodb.so'
       with_items:
         - /etc/php/7.2/apache2/php.ini
         - /etc/php/7.2/cli/php.ini
+
+    - name: Add mongodb to .env
+      become: true
+      lineinfile:
+        path: '{{ project_dir }}/.env'
+        line: '{{ item }}'
+      with_items:
+        - MONGO_HOST=18.222.85.159
+        - MONGO_PORT=27017
+
+    - name: Restart apache2
+      become: true
+      service:
+        name: apache2
+        state: restarted
 
   handlers:
     - name: restart apache2

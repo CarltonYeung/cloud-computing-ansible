@@ -22,14 +22,22 @@
         name: python-pip
         state: latest
 
+    - name: Install mysql_config
+      apt:
+        name: libmysqlclient-dev
+        state: latest
+
+    - name: Update pip
+      command: pip install --upgrade pip
+
     - name: Install mysql python module
       command: pip install MySQL-python
 
-    - name: Set root password
+    - name: Create user with ALL and GRANT OPTION
       mysql_user:
         name: '{{ username }}'
         password: '{{ password }}'
-        priv: '*.*:ALL'
+        priv: '*.*:ALL,GRANT'
         state: present
 
     - name: Accept remote connections and add credentials to my.cnf
@@ -42,12 +50,6 @@
           [mysql]
           user = {{ username }}
           password = {{ password }}
-
-    - name: Remove all anonymous user accounts
-      mysql_user:
-        name: ''
-        host_all: yes
-        state: absent
 
     - name: Create a new database with name {{ db_name }}
       mysql_db:

@@ -1,12 +1,11 @@
 [web]
-courseproject
+twitirfront
 
 [mongo]
-mongodb
-courseproject
+twitirmongo
 
 [hw4]
 hw4
 
 [mysql]
-mysql2
+twitirsql

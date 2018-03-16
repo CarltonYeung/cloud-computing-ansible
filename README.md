@@ -38,6 +38,34 @@ Set AllowOverride All for /var/www
 
 
 
+
+
+setup-laravel.yml
+Initial setup
+sudo git init
+sudo git remote add origin https://CarltonYeung@bitbucket.org/CarltonYeung/cse-356-course-project.git
+sudo git fetch --all
+sudo git reset --hard origin/master
+
+Fetch updated code
+sudo git fetch origin
+sudo git merge origin/master
+
+Install dependencies
+sudo composer install
+
+
+
 install-mysql.yml
-use python2
-ansible-playbook sample-playbook.yml -e 'ansible_python_interpreter=/usr/bin/python'
+use python2 or not?
+ansible-playbook install-mysql.yml -e 'ansible_python_interpreter=/usr/bin/python'
+ansible-playbook install-mysql.yml -e 'ansible_python_interpreter=/usr/bin/python3'
+
+Give permissions for other servers to connect
+GRANT ALL ON *.* TO 'carlton'@'69.124.154.35' IDENTIFIED BY 'cse356cloudcomputingtwitir' WITH GRANT OPTION;
+GRANT ALL ON *.* TO 'carlton'@'18.188.45.176' IDENTIFIED BY 'cse356cloudcomputingtwitir' WITH GRANT OPTION;
+
+
+install-mongodb.yml
+use twitir;
+Configure security group
