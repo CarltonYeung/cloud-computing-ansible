@@ -1,5 +1,5 @@
 ---
-- hosts: hw4
+- hosts: hw7
   remote_user: ubuntu
 
   tasks:

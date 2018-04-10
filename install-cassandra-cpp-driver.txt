@@ -1,0 +1,17 @@
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt update
+sudo apt install oracle-java8-installer -y
+echo "deb http://www.apache.org/dist/cassandra/debian 22x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
+sudo apt update
+sudo apt install cassandra -y
+nodetool status
+wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra/v2.8.1/cassandra-cpp-driver-dbg_2.8.1-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra/v2.8.1/cassandra-cpp-driver-dev_2.8.1-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra/v2.8.1/cassandra-cpp-driver_2.8.1-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv/v1.18.0/libuv-dbg_1.18.0-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv/v1.18.0/libuv-dev_1.18.0-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv/v1.18.0/libuv_1.18.0-1_amd64.deb
+sudo dpkg -i libuv-dbg_1.18.0-1_amd64.deb libuv-dev_1.18.0-1_amd64.deb libuv_1.18.0-1_amd64.deb cassandra-cpp-driver-dbg_2.8.1-1_amd64.deb cassandra-cpp-driver-dev_2.8.1-1_amd64.deb cassandra-cpp-driver_2.8.1-1_amd64.deb
+sudo apt install libgmp-dev -y
+sudo pecl channel-update pecl.php.net
+sudo pecl install cassandra
+add "extension=cassandra.so" to php.ini files
+
+cqlsh
+create keyspace and tables

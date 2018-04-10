@@ -37,28 +37,28 @@
         regexp: '(<Directory\s+/var/www/>\s+.*\s+AllowOverride\s+)None'
         replace: '\1All'
 
-    - name: Add php7.2 repository
+    - name: Add php7.1 repository
       become: true
       apt_repository:
         repo: 'ppa:ondrej/php'
 
-    - name: Install php7.2 and some required packages
+    - name: Install php7.1 and some required packages
       become: true
       apt:
         name: '{{ item }}'
         state: latest
         update_cache: yes
       with_items:
-        - php7.2
-        - php7.2-common
-        - php7.2-mbstring
-        - php7.2-xml
+        - php7.1
+        - php7.1-common
+        - php7.1-mbstring
+        - php7.1-xml
         - zip
         - unzip
-        - php7.2-zip
-        - php7.2-mysql
+        - php7.1-zip
+        - php7.1-mysql
         - php-pear
-        - php7.2-dev
+        - php7.1-dev
 
     - name: Install Composer
       become: true
@@ -71,6 +71,10 @@
       stat:
         path: '{{ project_dir }}'
       register: project_dir_stat
+
+    - name: Set php7.1 to default
+      become: true
+      command: update-alternatives --set php /usr/bin/php7.1
 
     - name: Create Laravel project
       become: true
@@ -110,17 +114,17 @@
         - { key: 'APP_NAME'         , value: 'twitir'                                          }
         - { key: 'APP_DEBUG'        , value: 'false'                                           }
         - { key: 'DB_CONNECTION'    , value: 'mysql'                                           }
-        - { key: 'DB_HOST'          , value: '52.14.69.6'                                      }
+        - { key: 'DB_HOST'          , value: 'localhost'                                       }
         - { key: 'DB_PORT'          , value: '3306'                                            }
         - { key: 'DB_DATABASE'      , value: 'twitir'                                          }
         - { key: 'DB_USERNAME'      , value: 'carlton'                                         }
         - { key: 'DB_PASSWORD'      , value: 'cse356cloudcomputingtwitir'                      }
         - { key: 'MAIL_DRIVER'      , value: 'smtp'                                            }
-        - { key: 'MAIL_HOST'        , value: 'localhost'                                       }
-        - { key: 'MAIL_PORT'        , value: '25'                                              }
-        - { key: 'MAIL_USERNAME'    , value: 'null'                                            }
+        - { key: 'MAIL_HOST'        , value: 'smtp.googlemail.com'                             }
+        - { key: 'MAIL_PORT'        , value: '465'                                             }
+        - { key: 'MAIL_USERNAME'    , value: 'cayeung.cse356@gmail.com'                        }
         - { key: 'MAIL_PASSWORD'    , value: 'null'                                            }
-        - { key: 'MAIL_ENCRYPTION'  , value: 'null'                                            }
+        - { key: 'MAIL_ENCRYPTION'  , value: 'ssl'                                             }
         - { key: 'MAIL_FROM_ADDRESS', value: 'noreply@twitir.io'                               }
         - { key: 'MAIL_FROM_NAME'   , value: 'twitir'                                          }
 
@@ -179,8 +183,8 @@
         path: '{{ item }}'
         line: 'extension=mongodb.so'
       with_items:
-        - /etc/php/7.2/apache2/php.ini
-        - /etc/php/7.2/cli/php.ini
+        - /etc/php/7.1/apache2/php.ini
+        - /etc/php/7.1/cli/php.ini
 
     - name: Add mongodb to .env
       become: true
@@ -188,8 +192,34 @@
         path: '{{ project_dir }}/.env'
         line: '{{ item }}'
       with_items:
-        - MONGO_HOST=18.222.85.159
+        - MONGO_HOST=localhost
         - MONGO_PORT=27017
+
+    - name: Set Postfix hostname
+      become: true
+      debconf:
+        name: postfix
+        question: postfix/mailname
+        value: "{{ ansible_fqdn }}"
+        vtype: string
+
+    - name: Set Postfix option type to Internet Site
+      become: true
+      debconf:
+        name: postfix
+        question: postfix/main_mailer_type
+        value: 'Internet Site'
+        vtype: string
+
+    - name: Install Postfix and mailutils
+      become: true
+      apt:
+        name: "{{ item }}"
+        state: latest
+        update_cache: yes
+      with_items:
+        - postfix
+        - mailutils
 
     - name: Restart apache2
       become: true

@@ -37,35 +37,34 @@ Set AllowOverride All for /var/www
 
 
 
+Install Ansible
+sudo apt-get update
+sudo apt-get install software-properties-common
+sudo apt-add-repository ppa:ansible/ansible
+sudo apt-get update
+sudo apt-get install ansible
 
-
-
-setup-laravel.yml
-Initial setup
-sudo git init
-sudo git remote add origin https://CarltonYeung@bitbucket.org/CarltonYeung/cse-356-course-project.git
-sudo git fetch --all
-sudo git reset --hard origin/master
-
-Fetch updated code
-sudo git fetch origin
-sudo git merge origin/master
-
-Install dependencies
+WEB SERVER
+ansible-playbook setup-laravel.yml -e 'ansible_python_interpreter=/usr/bin/python3'; ansible-playbook install-postfix.yml -e 'ansible_python_interpreter=/usr/bin/python3'
+sudo git init && sudo git remote add origin https://CarltonYeung@bitbucket.org/CarltonYeung/cse-356-course-project.git && sudo git fetch --all && sudo git reset --hard origin/master
+sudo git fetch origin && sudo git merge origin/master
 sudo composer install
 
+.env
+MAIL_DRIVER=smtp
+MAIL_HOST=smtp.googlemail.com
+MAIL_PORT=465
+MAIL_USERNAME=cayeung.cse356@gmail.com
+MAIL_PASSWORD=
+MAIL_ENCRYPTION=ssl
 
-
-install-mysql.yml
-use python2 or not?
-ansible-playbook install-mysql.yml -e 'ansible_python_interpreter=/usr/bin/python'
+MYSQL SERVER
+ansible-playbook install-mysql.yml
 ansible-playbook install-mysql.yml -e 'ansible_python_interpreter=/usr/bin/python3'
-
-Give permissions for other servers to connect
-GRANT ALL ON *.* TO 'carlton'@'69.124.154.35' IDENTIFIED BY 'cse356cloudcomputingtwitir' WITH GRANT OPTION;
-GRANT ALL ON *.* TO 'carlton'@'18.188.45.176' IDENTIFIED BY 'cse356cloudcomputingtwitir' WITH GRANT OPTION;
+GRANT ALL ON *.* TO 'carlton'@'%' IDENTIFIED BY 'cse356cloudcomputingtwitir' WITH GRANT OPTION;
 
 
-install-mongodb.yml
-use twitir;
+MONGODB SERVER
+ansible-playbook install-mongodb.yml -e 'ansible_python_interpreter=/usr/bin/python3'
+use twitir
 Configure security group

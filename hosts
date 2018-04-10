@@ -1,11 +1,8 @@
 [web]
-twitirfront
+cse356
 
 [mongo]
-twitirmongo
-
-[hw4]
-hw4
+cse356
 
 [mysql]
-twitirsql
+cse356
