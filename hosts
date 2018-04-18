@@ -1,8 +1,10 @@
-[web]
-cse356
+[frontend]
+frontend1
+frontend2
+frontend3
 
 [mongo]
-cse356
+databases
 
 [mysql]
-cse356
+databases

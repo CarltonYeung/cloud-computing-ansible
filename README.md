@@ -68,3 +68,68 @@ MONGODB SERVER
 ansible-playbook install-mongodb.yml -e 'ansible_python_interpreter=/usr/bin/python3'
 use twitir
 Configure security group
+
+
+
+CASSANDRA
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt update && sudo apt install oracle-java8-installer -y
+echo "deb http://www.apache.org/dist/cassandra/debian 22x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
+sudo apt update && sudo apt install cassandra -y
+nodetool status
+wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra/v2.8.1/cassandra-cpp-driver-dbg_2.8.1-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra/v2.8.1/cassandra-cpp-driver-dev_2.8.1-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra/v2.8.1/cassandra-cpp-driver_2.8.1-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv/v1.18.0/libuv-dbg_1.18.0-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv/v1.18.0/libuv-dev_1.18.0-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv/v1.18.0/libuv_1.18.0-1_amd64.deb
+sudo dpkg -i libuv-dbg_1.18.0-1_amd64.deb libuv-dev_1.18.0-1_amd64.deb libuv_1.18.0-1_amd64.deb cassandra-cpp-driver-dbg_2.8.1-1_amd64.deb cassandra-cpp-driver-dev_2.8.1-1_amd64.deb cassandra-cpp-driver_2.8.1-1_amd64.deb
+sudo apt install libgmp-dev -y && sudo pecl channel-update pecl.php.net && sudo pecl install cassandra
+add "extension=cassandra.so" to php.ini files
+
+/etc/cassandra/cassandra.yaml
+rpc_address: 0.0.0.0
+rpc_port: 9042
+broadcast_rpc_address: 130.245.168.216
+data_file_directories:
+    - /var/lib/cassandra/volume
+
+cqlsh
+CREATE KEYSPACE twitir WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
+CREATE TABLE twitir.media (id int PRIMARY KEY, filename text, contents blob, type text, size int);
+CREATE TABLE twitir.refcounts (id int PRIMARY KEY, refcount counter);
+
+
+https://docs.datastax.com/en/cassandra/2.1/cassandra/configuration/configCassandra_yaml_r.html
+Check disk space "df -h"
+/dev/vdb needs to be mounted
+https://github.com/naturalis/openstack-docs/wiki/Howto:-Creating-and-using-Volumes-on-a-Linux-instance
+sudo lsblk -f
+sudo mkfs.ext4 /dev/vdb
+mkdir /var/lib/cassandra/volume
+sudo mount /dev/vdb /var/lib/cassandra/volume
+sudo chown cassandra:cassandra /var/lib/cassandra/volume
+
+
+sudo apt remove cassandra
+sudo apt purge cassandra
+
+Load Balancer w/ NGINX
+nginx.conf
+    include /etc/nginx/sites-available/load-balancer.conf
+
+load-balancer.conf
+upstream twitir {
+    ip_hash;
+    server 130.245.171.55;
+    server 130.245.170.178;
+    server 130.245.168.218;
+}
+
+server {
+    listen 80;
+    server_name cayeung.cse356.compas.cs.stonybrook.edu;
+    location ~ {
+        proxy_pass http://twitir;
+        proxy_set_header Host $host;
+        proxy_next_upstream error timeout http_500;
+    }
+}
+
+yahoo availability zone is slow af
