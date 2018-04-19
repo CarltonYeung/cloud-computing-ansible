@@ -92,8 +92,8 @@ data_file_directories:
 
 cqlsh
 CREATE KEYSPACE twitir WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
-CREATE TABLE twitir.media (id int PRIMARY KEY, filename text, contents blob, type text, size int);
-CREATE TABLE twitir.refcounts (id int PRIMARY KEY, refcount counter);
+CREATE TABLE twitir.media (id uuid PRIMARY KEY, filename text, contents blob, type text, size int);
+CREATE TABLE twitir.refcounts (id uuid PRIMARY KEY, refcount counter);
 
 
 https://docs.datastax.com/en/cassandra/2.1/cassandra/configuration/configCassandra_yaml_r.html
