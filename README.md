@@ -45,18 +45,27 @@ sudo apt-get update
 sudo apt-get install ansible
 
 WEB SERVER
-ansible-playbook setup-laravel.yml -e 'ansible_python_interpreter=/usr/bin/python3'; ansible-playbook install-postfix.yml -e 'ansible_python_interpreter=/usr/bin/python3'
+ansible-playbook setup-laravel.yml -e 'ansible_python_interpreter=/usr/bin/python3'
 sudo git init && sudo git remote add origin https://CarltonYeung@bitbucket.org/CarltonYeung/cse-356-course-project.git && sudo git fetch --all && sudo git reset --hard origin/master
 sudo git fetch origin && sudo git merge origin/master
 sudo composer install
 
 .env
+Gmail
 MAIL_DRIVER=smtp
 MAIL_HOST=smtp.googlemail.com
 MAIL_PORT=465
 MAIL_USERNAME=cayeung.cse356@gmail.com
 MAIL_PASSWORD=
 MAIL_ENCRYPTION=ssl
+
+Postfix
+MAIL_DRIVER=smtp
+MAIL_HOST=localhost
+MAIL_PORT=25
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
 
 MYSQL SERVER
 ansible-playbook install-mysql.yml
@@ -78,6 +87,7 @@ echo "deb http://www.apache.org/dist/cassandra/debian 22x main" | sudo tee -a /e
 curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
 sudo apt update && sudo apt install cassandra -y
 nodetool status
+
 wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra/v2.8.1/cassandra-cpp-driver-dbg_2.8.1-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra/v2.8.1/cassandra-cpp-driver-dev_2.8.1-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/cassandra/v2.8.1/cassandra-cpp-driver_2.8.1-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv/v1.18.0/libuv-dbg_1.18.0-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv/v1.18.0/libuv-dev_1.18.0-1_amd64.deb; wget http://downloads.datastax.com/cpp-driver/ubuntu/16.04/dependencies/libuv/v1.18.0/libuv_1.18.0-1_amd64.deb
 sudo dpkg -i libuv-dbg_1.18.0-1_amd64.deb libuv-dev_1.18.0-1_amd64.deb libuv_1.18.0-1_amd64.deb cassandra-cpp-driver-dbg_2.8.1-1_amd64.deb cassandra-cpp-driver-dev_2.8.1-1_amd64.deb cassandra-cpp-driver_2.8.1-1_amd64.deb
 sudo apt install libgmp-dev -y && sudo pecl channel-update pecl.php.net && sudo pecl install cassandra
@@ -102,10 +112,13 @@ Check disk space "df -h"
 https://github.com/naturalis/openstack-docs/wiki/Howto:-Creating-and-using-Volumes-on-a-Linux-instance
 sudo lsblk -f
 sudo mkfs.ext4 /dev/vdb
-mkdir /var/lib/cassandra/volume
+sudo mkdir /var/lib/cassandra/volume
 sudo mount /dev/vdb /var/lib/cassandra/volume
-sudo chown cassandra:cassandra /var/lib/cassandra/volume
+sudo chown -R cassandra:cassandra /var/lib/cassandra/volume
 
+
+If cassandra won't start, check /var/log/cassandra/debug.log
+May need to run chown again
 
 sudo apt remove cassandra
 sudo apt purge cassandra
@@ -133,3 +146,7 @@ server {
 }
 
 yahoo availability zone is slow af
+
+
+Apache configuration
+/etc/apache2/mods-enabled/mpm_prefork.conf
