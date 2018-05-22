@@ -114,11 +114,11 @@
         - { key: 'APP_NAME'         , value: 'twitir'                                          }
         - { key: 'APP_DEBUG'        , value: 'false'                                           }
         - { key: 'DB_CONNECTION'    , value: 'mysql'                                           }
-        - { key: 'DB_HOST'          , value: '130.245.168.216'                                 }
+        - { key: 'DB_HOST'          , value: ''                                                }
         - { key: 'DB_PORT'          , value: '3306'                                            }
         - { key: 'DB_DATABASE'      , value: 'twitir'                                          }
-        - { key: 'DB_USERNAME'      , value: 'carlton'                                         }
-        - { key: 'DB_PASSWORD'      , value: 'cse356cloudcomputingtwitir'                      }
+        - { key: 'DB_USERNAME'      , value: ''                                                }
+        - { key: 'DB_PASSWORD'      , value: ''                                                }
         - { key: 'MAIL_DRIVER'      , value: 'smtp'                                            }
         - { key: 'MAIL_HOST'        , value: 'localhost'                                       }
         - { key: 'MAIL_PORT'        , value: '25'                                              }
@@ -192,7 +192,7 @@
         path: '{{ project_dir }}/.env'
         line: '{{ item }}'
       with_items:
-        - MONGO_HOST=130.245.168.216
+        - MONGO_HOST=REDACTED
         - MONGO_PORT=27017
 
     - name: Set Postfix hostname

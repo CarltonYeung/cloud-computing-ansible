@@ -4,8 +4,8 @@
   become: true
 
   vars:
-    username: carlton
-    password: cse356cloudcomputingtwitir
+    username: REDACTED
+    password: REDACTED
     db_name: twitir
     dump_name: twitir.sql
     dump_file: '../courseproject/{{ dump_name }}'

@@ -55,7 +55,7 @@ Gmail
 MAIL_DRIVER=smtp
 MAIL_HOST=smtp.googlemail.com
 MAIL_PORT=465
-MAIL_USERNAME=cayeung.cse356@gmail.com
+MAIL_USERNAME=
 MAIL_PASSWORD=
 MAIL_ENCRYPTION=ssl
 
@@ -70,7 +70,7 @@ MAIL_ENCRYPTION=null
 MYSQL SERVER
 ansible-playbook install-mysql.yml
 ansible-playbook install-mysql.yml -e 'ansible_python_interpreter=/usr/bin/python3'
-GRANT ALL ON *.* TO 'carlton'@'%' IDENTIFIED BY 'cse356cloudcomputingtwitir' WITH GRANT OPTION;
+GRANT ALL ON *.* TO 'carlton'@'%' IDENTIFIED BY 'REDACTED' WITH GRANT OPTION;
 
 
 MONGODB SERVER
@@ -96,7 +96,7 @@ add "extension=cassandra.so" to php.ini files
 /etc/cassandra/cassandra.yaml
 rpc_address: 0.0.0.0
 rpc_port: 9042
-broadcast_rpc_address: 130.245.168.216
+broadcast_rpc_address: REDACTED
 data_file_directories:
     - /var/lib/cassandra/volume
 
@@ -130,14 +130,14 @@ nginx.conf
 load-balancer.conf
 upstream twitir {
     ip_hash;
-    server 130.245.171.55;
-    server 130.245.170.178;
-    server 130.245.168.218;
+    server REDACTED;
+    server REDACTED;
+    server REDACTED;
 }
 
 server {
     listen 80;
-    server_name cayeung.cse356.compas.cs.stonybrook.edu;
+    server_name REDACTED;
     location ~ {
         proxy_pass http://twitir;
         proxy_set_header Host $host;
@@ -145,7 +145,7 @@ server {
     }
 }
 
-yahoo availability zone is slow af
+yahoo availability zone is slow
 
 
 Apache configuration
